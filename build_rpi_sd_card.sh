@@ -4,6 +4,9 @@
 #
 # by Klaus M Pfeiffer, http://blog.kmp.or.at/ , 2012-06-24
 #
+# 2014-06-28 J.Mattsson - added early exit on error
+#                       - added --no-check-gpg to debootstrap
+#                       - made release name (wheezy) a mere default
 # 2013-08-25 J.Mattsson - trimmed down further and changed to raspbian armhf
 # 
 
@@ -38,7 +41,7 @@ deb_mirror="http://mirror.internode.on.net/pub/raspbian/raspbian/"
 #deb_local_mirror="http://debian.kmp.or.at:3142/debian"
 
 bootsize="64M"
-deb_release="wheezy"
+: ${deb_release:="wheezy"}
 
 device=$1
 buildenv="/root/rpi"
@@ -91,6 +94,7 @@ p
 w
 EOF
 
+set -e
 
 if [ "$image" != "" ]; then
   losetup -d $device
@@ -121,7 +125,7 @@ mount $rootp $rootfs
 
 cd $rootfs
 
-debootstrap --foreign --arch armhf $deb_release $rootfs $deb_local_mirror
+debootstrap --no-check-gpg --foreign --arch armhf $deb_release $rootfs $deb_local_mirror
 cp /usr/bin/qemu-arm-static usr/bin/
 LANG=C chroot $rootfs /debootstrap/debootstrap --second-stage
 

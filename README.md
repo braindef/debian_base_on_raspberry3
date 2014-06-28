@@ -63,7 +63,7 @@ The kernel still uses the old table. The new table will be used at
 the next reboot or after you run partprobe(8) or kpartx(8)
 Syncing disks.
 root@raspbian:~# reboot
-Broadcast message from root@energymon (pts/0) (Sun Aug 25 05:09:46 2013):
+Broadcast message from root@raspbian (pts/0) (Sun Aug 25 05:09:46 2013):
 
 The system is going down for reboot NOW!
 
