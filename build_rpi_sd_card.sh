@@ -4,6 +4,7 @@
 #
 # by Klaus M Pfeiffer, http://blog.kmp.or.at/ , 2012-06-24
 #
+# 2014-07-20 J.Mattsson - fixes to get current rpi-update to work
 # 2014-06-28 J.Mattsson - added early exit on error
 #                       - added --no-check-gpg to debootstrap
 #                       - made release name (wheezy) a mere default
@@ -42,6 +43,8 @@ deb_mirror="http://mirror.internode.on.net/pub/raspbian/raspbian/"
 
 bootsize="64M"
 : ${deb_release:="wheezy"}
+
+echo "Using Debian release: $deb_release"
 
 device=$1
 buildenv="/root/rpi"
@@ -98,7 +101,7 @@ set -e
 
 if [ "$image" != "" ]; then
   losetup -d $device
-  device=`kpartx -va $image | sed -E 's/.*(loop[0-9])p.*/\1/g' | head -1`
+  device=`kpartx -sva $image | sed -E 's/.*(loop[0-9])p.*/\1/g' | head -1`
   device="/dev/mapper/${device}"
   bootp=${device}p1
   rootp=${device}p2
@@ -155,12 +158,12 @@ snd_bcm2835
 
 echo "#!/bin/bash
 apt-get update 
-apt-get -y install git-core binutils ca-certificates
+apt-get -y install --no-install-recommends git-core binutils ca-certificates curl
 wget http://goo.gl/1BOfJ -O /usr/bin/rpi-update
 chmod +x /usr/bin/rpi-update
-mkdir -p /lib/modules/3.1.9+
+mkdir /lib/modules
 touch /boot/start.elf
-rpi-update
+SKIP_BACKUP=1 rpi-update
 apt-get -y install ntp openssh-server less vim
 echo \"root:raspberry\" | chpasswd
 sed -i -e 's/KERNEL\!=\"eth\*|/KERNEL\!=\"/' /lib/udev/rules.d/75-persistent-net-generator.rules
