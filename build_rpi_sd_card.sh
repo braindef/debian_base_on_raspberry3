@@ -4,9 +4,7 @@
 #
 # by Klaus M Pfeiffer, http://blog.kmp.or.at/ , 2012-06-24
 #
-# updated to jessie by Marc Landolt, http://www.marclandolt.ch/#mindhacking , 2016-03-12
-#
-#
+# 2016-03-12 Mj.Landolt - updated to Debian Jessie by Marc Landolt, http://www.marclandolt.ch/#mindhacking , 2016-03-12
 #
 # 2014-07-20 J.Mattsson - fixes to get current rpi-update to work
 # 2014-06-28 J.Mattsson - added early exit on error
@@ -40,7 +38,7 @@
 
 # you need at least
 
-read -p "Installing Debian Packages, pleas press [ANYKE]"
+read -p "Installing Debian Packages, please press [ANYKEY]"
 echo
 
 apt-get install binfmt-support qemu qemu-user-static debootstrap kpartx lvm2 dosfstools
@@ -157,8 +155,9 @@ mount $rootp $rootfs
 cd $rootfs
 
 debootstrap  --foreign --arch armhf $deb_release $rootfs $deb_local_mirror
+#debootstrap  --foreign --arch arm64 $deb_release $rootfs $deb_local_mirror
 cp /usr/bin/qemu-arm-static usr/bin/
-LANG=C chroot $rootfs /debootstrap/debootstrap --second-stage
+LANG=C chroot $rootfs debootstrap/debootstrap --second-stage
 
 mount $bootp $bootfs
 
@@ -213,7 +212,20 @@ rm -f third-stage
 chmod +x third-stage
 LANG=C chroot $rootfs /third-stage
 
-echo "deb $deb_mirror $deb_release main contrib non-free
+#echo "deb $deb_mirror $deb_release main contrib non-free
+#" > etc/apt/sources.list
+
+
+echo "
+deb http://httpredir.debian.org/debian/ $deb_release main contrib
+deb-src http://httpredir.debian.org/debian/ $deb_release main contrib
+
+deb http://security.debian.org/ $deb_release/updates main contrib
+deb-src http://security.debian.org/ $deb_release/updates main contrib
+
+deb http://httpredir.debian.org/debian/ $deb_release-updates main contrib
+deb-src http://httpredir.debian.org/debian/ $deb_release-updates main contrib
+
 " > etc/apt/sources.list
 
 echo "#!/bin/bash
@@ -226,8 +238,15 @@ LANG=C chroot $rootfs /cleanup
 cd
 
 sync
-echo unmount mmc
+echo "Press any key to unmount SDcard"
 read
+
+udisksctl unmount -p  /dev/mmcblk0
+udisksctl unmount -p  /dev/mmcblk0p1
+udisksctl unmount -p  /dev/mmcblk0p2
+
+udisksctl unmount -p $bootp
+udisksctl unmount -p $rootp
 
 umount $bootp
 umount $rootp
@@ -238,4 +257,4 @@ if [ "$image" != "" ]; then
 fi
 
 
-echo "done."
+echo "have fun..."
