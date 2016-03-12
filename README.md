@@ -1,8 +1,12 @@
-# NOT WORKING YET
+# partitially working
+### Login credentials: root/root
+### for the moment you have to edit /etc/fstab manually and add /dev/mmcblk0p2 as root device with / otherwise you get a read only root
+
+debian_base_on_raspberry3
+=========================
 
 
-rasbian_base
-============
+Based on raspbain script from jmattson, TNX jm
 
 Since I frequently find myself wanting a minimal base installation of Raspbian
 for my various Raspberry Pi based projects, I ended up creating this one.
@@ -16,7 +20,7 @@ I have tweaked it to use Raspbian rather than Debian, and hardware
 floating-point rather than software emulation. Also, I removed a few more
 packages which I didn't consider necessary.
 
-Login credentials: root/raspberry
+Login credentials: root/root
 
 Resizing the root partition
 ===========================
