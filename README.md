@@ -2,6 +2,8 @@
 ### Login credentials: root/root
 ### for the moment you have to edit /etc/fstab manually and add /dev/mmcblk0p2 as root device with / otherwise you get a read only root
 
+start with: sudo ./build_rpi_sd_card.sh /dev/mmcblk0
+
 debian_base_on_raspberry3
 =========================
 
