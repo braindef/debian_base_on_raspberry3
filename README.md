@@ -7,7 +7,9 @@ installs Debian Jessie for ARM you can do this eg with an AMD64 machine, uses de
 **start with**: sudo ./build_rpi_sd_card.sh /dev/mmcblk0 (on an Intel or AMD Computer with plugged in microSDCard for Raspi3)
 
 -then you can boot it in your Raspi3
+
 -than you can install a Graphical environment with:
+
 **apt-get install lxde** 
 it takes forever (2h) so plan eg to bake a cake during this part of the installation, since it's not funny watching 2h packages installing... 
 
