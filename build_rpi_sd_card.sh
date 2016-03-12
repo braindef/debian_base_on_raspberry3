@@ -4,6 +4,10 @@
 #
 # by Klaus M Pfeiffer, http://blog.kmp.or.at/ , 2012-06-24
 #
+# updated by Marc Landolt, http://www.marclandolt.ch/#mindhacking , 2016-03-12
+#
+#
+#
 # 2014-07-20 J.Mattsson - fixes to get current rpi-update to work
 # 2014-06-28 J.Mattsson - added early exit on error
 #                       - added --no-check-gpg to debootstrap
@@ -35,10 +39,14 @@
 #	initial
 
 # you need at least
-# apt-get install binfmt-support qemu qemu-user-static debootstrap kpartx lvm2 dosfstools
 
-deb_mirror="http://mirror.internode.on.net/pub/raspbian/raspbian/"
-#deb_mirror="http://http.debian.net/debian"
+read -p "Installing Debian Packages, pleas press [ANYKE]"
+echo
+
+apt-get install binfmt-support qemu qemu-user-static debootstrap kpartx lvm2 dosfstools
+
+#deb_mirror="http://mirror.internode.on.net/pub/raspbian/raspbian/"
+deb_mirror="http://httpredir.debian.org/debian"
 #deb_local_mirror="http://debian.kmp.or.at:3142/debian"
 
 bootsize="64M"
@@ -81,6 +89,17 @@ else
   dd if=/dev/zero of=$device bs=512 count=1
 fi
 
+umount /dev/mmc*
+
+echo fdisk $device creating new DOS Partition
+fdisk $device << EOF
+o
+
+w
+
+EOF
+
+echo fdisk $device
 fdisk $device << EOF
 n
 p
@@ -119,6 +138,9 @@ else
   fi  
 fi
 
+echo mkfs.vfat $bootp
+echo mkfs.ext4 $rootp
+
 mkfs.vfat $bootp
 mkfs.ext4 $rootp
 
@@ -128,13 +150,23 @@ mount $rootp $rootfs
 
 cd $rootfs
 
-debootstrap --no-check-gpg --foreign --arch armhf $deb_release $rootfs $deb_local_mirror
+debootstrap  --foreign --arch armhf $deb_release $rootfs $deb_local_mirror
 cp /usr/bin/qemu-arm-static usr/bin/
 LANG=C chroot $rootfs /debootstrap/debootstrap --second-stage
 
 mount $bootp $bootfs
 
-echo "deb $deb_local_mirror $deb_release main contrib non-free
+echo "
+deb http://httpredir.debian.org/debian/ jessie main contrib
+deb-src http://httpredir.debian.org/debian/ jessie main contrib
+
+deb http://security.debian.org/ jessie/updates main contrib
+deb-src http://security.debian.org/ jessie/updates main contrib
+
+deb http://httpredir.debian.org/debian/ jessie-updates main contrib
+deb-src http://httpredir.debian.org/debian/ jessie-updates main contrib
+
+
 " > etc/apt/sources.list
 
 echo "dwc_otg.lpm_enable=0 console=ttyAMA0,115200 kgdboc=ttyAMA0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 rootwait" > boot/cmdline.txt
@@ -143,7 +175,7 @@ echo "proc            /proc           proc    defaults        0       0
 /dev/mmcblk0p1  /boot           vfat    defaults        0       0
 " > etc/fstab
 
-echo "raspbian" > etc/hostname
+echo "debian-wheezy" > etc/hostname
 
 echo "auto lo
 iface lo inet loopback
@@ -159,13 +191,14 @@ snd_bcm2835
 echo "#!/bin/bash
 apt-get update 
 apt-get -y install --no-install-recommends git-core binutils ca-certificates curl
+#das dann später raus nehmen
 wget http://goo.gl/1BOfJ -O /usr/bin/rpi-update
 chmod +x /usr/bin/rpi-update
 mkdir /lib/modules
 touch /boot/start.elf
 SKIP_BACKUP=1 rpi-update
 apt-get -y install ntp openssh-server less vim
-echo \"root:raspberry\" | chpasswd
+echo \"root:\" | chpasswd
 sed -i -e 's/KERNEL\!=\"eth\*|/KERNEL\!=\"/' /lib/udev/rules.d/75-persistent-net-generator.rules
 rm -f /etc/udev/rules.d/70-persistent-net.rules
 rm -f third-stage
@@ -185,6 +218,10 @@ LANG=C chroot $rootfs /cleanup
 
 cd
 
+sync
+echo unmount mmc
+read
+
 umount $bootp
 umount $rootp
 
@@ -195,4 +232,3 @@ fi
 
 
 echo "done."
-
