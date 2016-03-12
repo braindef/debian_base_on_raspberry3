@@ -198,7 +198,8 @@ echo "#!/bin/bash
 apt-get update 
 apt-get -y install --no-install-recommends git-core binutils ca-certificates curl
 #das dann später raus nehmen
-wget http://goo.gl/1BOfJ -O /usr/bin/rpi-update
+wget https://raw.githubusercontent.com/Hexxeh/rpi-update/master/rpi-update -O /usr/bin/rpi-update
+#wget http://goo.gl/1BOfJ -O /usr/bin/rpi-update
 chmod +x /usr/bin/rpi-update
 mkdir /lib/modules
 touch /boot/start.elf
@@ -207,7 +208,7 @@ apt-get -y install ntp openssh-server less vim
 echo \"root:root\" | chpasswd
 sed -i -e 's/KERNEL\!=\"eth\*|/KERNEL\!=\"/' /lib/udev/rules.d/75-persistent-net-generator.rules
 rm -f /etc/udev/rules.d/70-persistent-net.rules
-rm -f third-stage
+#rm -f third-stage => google adresse löschen?
 " > third-stage
 chmod +x third-stage
 LANG=C chroot $rootfs /third-stage
