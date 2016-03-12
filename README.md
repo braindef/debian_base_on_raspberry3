@@ -1,8 +1,11 @@
 # partitially working
+installs Debian Jessie for ARM you can do this eg with an AMD64 machine, uses debootstrap
 ### Login credentials: root/root
 ### for the moment you have to edit /etc/fstab manually and add /dev/mmcblk0p2 as root device with / otherwise you get a read only root
 
-start with: sudo ./build_rpi_sd_card.sh /dev/mmcblk0
+TODO: Test with ARM64
+
+start with: **sudo ./build_rpi_sd_card.sh /dev/mmcblk0**
 
 debian_base_on_raspberry3
 =========================
