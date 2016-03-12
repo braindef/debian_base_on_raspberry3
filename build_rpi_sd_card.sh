@@ -179,6 +179,7 @@ echo "dwc_otg.lpm_enable=0 console=ttyAMA0,115200 kgdboc=ttyAMA0,115200 console=
 
 echo "proc            /proc           proc    defaults        0       0
 /dev/mmcblk0p1  /boot           vfat    defaults        0       0
+/dev/mmcblk0p2  /           ext4    defaults        0       0
 " > etc/fstab
 
 echo "debian" > etc/hostname
