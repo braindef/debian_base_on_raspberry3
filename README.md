@@ -3,16 +3,21 @@ installs Debian Jessie for ARM you can do this eg with an AMD64 machine, uses de
 ### Login credentials: root/root
 ### for the moment you have to edit /etc/fstab manually and add /dev/mmcblk0p2 as root device with / otherwise you get a read only root
 
-TODO: Test with ARM64
+**start with**: sudo ./build_rpi_sd_card.sh /dev/mmcblk0
 
-start with: **sudo ./build_rpi_sd_card.sh /dev/mmcblk0**
+-then you can boot it in your Raspi3
+-than you can install a Graphical environment with:
+**apt-get install lxde** 
+it takes forever (2h) so plan eg to bake a cake during this part of the installation, since it's not funny watching 2h packages installing... 
 
-debian_base_on_raspberry3
-=========================
-
+TODO: Test with ARM64 (since this shall give more performance)
+      WiFi
+      other Drivers like sound
 
 Based on raspbain script from jmattson, TNX jm
 
+debian_base_on_raspberry3
+=========================
 Since I frequently find myself wanting a minimal base installation of Raspbian
 for my various Raspberry Pi based projects, I ended up creating this one.
 
