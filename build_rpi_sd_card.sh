@@ -4,7 +4,7 @@
 #
 # by Klaus M Pfeiffer, http://blog.kmp.or.at/ , 2012-06-24
 #
-# updated by Marc Landolt, http://www.marclandolt.ch/#mindhacking , 2016-03-12
+# updated to jessie by Marc Landolt, http://www.marclandolt.ch/#mindhacking , 2016-03-12
 #
 #
 #
@@ -49,8 +49,14 @@ apt-get install binfmt-support qemu qemu-user-static debootstrap kpartx lvm2 dos
 deb_mirror="http://httpredir.debian.org/debian"
 #deb_local_mirror="http://debian.kmp.or.at:3142/debian"
 
+udisksctl unmount -p  /dev/mmcblk0
+udisksctl unmount -p  /dev/mmcblk0p1
+udisksctl unmount -p  /dev/mmcblk0p2
+udisksctl unmount -p  /dev/mmcblk0p3
+udisksctl unmount -p  /dev/mmcblk0p4
+
 bootsize="64M"
-: ${deb_release:="wheezy"}
+: ${deb_release:="jessie"}
 
 echo "Using Debian release: $deb_release"
 
@@ -175,7 +181,7 @@ echo "proc            /proc           proc    defaults        0       0
 /dev/mmcblk0p1  /boot           vfat    defaults        0       0
 " > etc/fstab
 
-echo "debian-wheezy" > etc/hostname
+echo "debian" > etc/hostname
 
 echo "auto lo
 iface lo inet loopback
@@ -198,7 +204,7 @@ mkdir /lib/modules
 touch /boot/start.elf
 SKIP_BACKUP=1 rpi-update
 apt-get -y install ntp openssh-server less vim
-echo \"root:\" | chpasswd
+echo \"root:root\" | chpasswd
 sed -i -e 's/KERNEL\!=\"eth\*|/KERNEL\!=\"/' /lib/udev/rules.d/75-persistent-net-generator.rules
 rm -f /etc/udev/rules.d/70-persistent-net.rules
 rm -f third-stage
