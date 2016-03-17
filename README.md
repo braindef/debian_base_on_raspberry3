@@ -1,6 +1,6 @@
 debian_base_on_raspberry3
 =========================
-## partitially working
+## partitially working on Debian Jessie 
 installs Debian Jessie for ARM you can do this eg with an AMD64 machine, uses debootstrap
 ### Login credentials: root / root
 
