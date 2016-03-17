@@ -8,6 +8,11 @@ installs Debian Jessie for ARM you can do this eg with an AMD64 machine, uses de
 
 -then you can boot it in your Raspi3
 
+To select your keyboard:
+
+**apt-cache search keyboard** 
+**apt-cache console-setup** (that lets you select your keyboard and language, takes about 1Min.) 
+
 -than you can install a Graphical environment with:
 
 **apt-get install lxde** 
