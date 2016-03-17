@@ -12,7 +12,7 @@ To select your keyboard:
 
 **apt-cache search keyboard** 
 
-**apt-cache console-setup** (that lets you select your keyboard and language, takes about 1Min.) 
+**apt-get install console-setup** (that lets you select your keyboard and language, takes about 1Min.) 
 
 -than you can install a Graphical environment with:
 
