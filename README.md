@@ -20,7 +20,7 @@ To select your keyboard:
 **apt-get install lxde** 
 it takes forever (2h) so plan eg to bake a cake during this part of the installation, since it's not funny watching 2h packages installing... 
 
-TODO: Test with ARM64 (since this shall give more performance)
+      TODO: Test with ARM64 (since this shall give more performance)
 
       WiFi
 
