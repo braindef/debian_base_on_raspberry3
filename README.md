@@ -25,7 +25,7 @@ TODO: Test with ARM64 (since this shall give more performance)
 
       other Drivers like sound
 
-      seems to work also with debian stretch too :%s/jessie/stretch/g (vim) but without network eth0 nor wifi
+      seems to work with debian stretch too :%s/jessie/stretch/g (vim) but without network eth0 nor wifi
 
       (maybe --2016-03-20 22:38:26--  https://raw.githubusercontent.com/Hexxeh/rpi-update/master/rpi-update
       not yet compatible stretch kernel) but it boots...
