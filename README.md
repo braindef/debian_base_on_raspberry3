@@ -21,7 +21,8 @@ To select your keyboard:
 it takes forever (2h) so plan eg to bake a cake during this part of the installation, since it's not funny watching 2h packages installing... 
 
 or use the installation script install.sh, needs to be made executable with chmod u+x install.sh then run with
-**./install.sh**
+
+**./install.sh** (use lightdm, gdm3 seems to be to slow)
 
       TODO: Test with ARM64 (since this shall give more performance)
 
