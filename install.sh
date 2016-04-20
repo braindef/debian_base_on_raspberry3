@@ -92,6 +92,9 @@ apt-get update && apt-get upgrade
 #debian linux
 apt-get install sudo gdm3 lightdm lxde gnome gnome-shell inkscape gimp libreoffice nmap keepassx vim icedove gnome-commander iceweasel libreoffice-help-de libreoffice-l10n-de clive mc pam-usb* xsane md5deep rsync redshift extundelete gconf-editor tripwire gparted chromium rdfind kdenlive snmp virtualbox kazam stopmotion jigdo-file qrencode posterazor audacity build-essential pkg-config  libdbus-1-dev apt-xapian-index apt-file figlet gconf-editor git nmon tcpdump iptraf mumble font-manager quassel libreoffice-l10n-de pidgin cups-pdf
 
+#debian linux on arm
+apt-get install sudo gdm3 lightdm lxde gnome gnome-shell inkscape gimp libreoffice nmap keepassx vim icedove gnome-commander iceweasel libreoffice-help-de libreoffice-l10n-de clive mc pam-usb* xsane md5deep rsync redshift extundelete gconf-editor tripwire gparted rdfind kdenlive snmp kazam stopmotion jigdo-file qrencode posterazor audacity build-essential pkg-config  libdbus-1-dev apt-xapian-index apt-file figlet gconf-editor git nmon tcpdump iptraf mumble font-manager quassel libreoffice-l10n-de pidgin cups-pdf
+
 #trisquel linux
 #apt-get install sudo gdm3 gnome gnome-shell inkscape gimp libreoffice nmap keepassx vim icedove gnome-commander  libreoffice-help-de libreoffice-l10n-de clive mc pam-usb* xsane md5deep rsync redshift extundelete gconf-editor tripwire gparted chromium rdfind kdenlive snmp virtualbox kazam stopmotion jigdo-file qrencode posterazor audacity build-essential pkg-config  libdbus-1-dev apt-xapian-index apt-file figlet gconf-editor git nmon tcpdump iptraf mumble font-manager quassel
 
