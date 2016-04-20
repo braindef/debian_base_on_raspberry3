@@ -1,7 +1,7 @@
 debian_base_on_raspberry3
 =========================
 ## does not work with Raspberry PI 1 (Keyboard Issue, kernelmod?)
-## partitially working on Debian Jessie 
+## partitially working Debian Jessie 
 installs Debian Jessie for ARM you can do this eg with an AMD64 machine, uses debootstrap
 ### Login credentials: root / root
 
@@ -19,6 +19,9 @@ To select your keyboard:
 
 **apt-get install lxde** 
 it takes forever (2h) so plan eg to bake a cake during this part of the installation, since it's not funny watching 2h packages installing... 
+
+or use the installation script install.sh, needs to be made executable with chmod u+x install.sh then run with
+**./install.sh**
 
       TODO: Test with ARM64 (since this shall give more performance)
 
