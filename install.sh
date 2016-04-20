@@ -19,6 +19,8 @@ else
   exit
 fi
 
+apt-get update
+apt-get upgrade
 apt-get install lsb-release
 
 echo
