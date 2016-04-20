@@ -19,6 +19,8 @@ else
   exit
 fi
 
+apt-get install lsb-release
+
 echo
 echo
 echo -e "\e[91mDebian Schlüssel\e[39m runterladen & lokal speichern (y/n)?"
@@ -38,8 +40,6 @@ else
   echo -e "lade Debian Schlüssel nicht runter"
   echo -e "not downloading debian fingerprints"
 fi
-
-apt-get install lsb-release 
 
 echo -e "\e[91mDebian Repository Index\e[39m über \e[33mTor\e[39m runterladen, was dann apt automatisch vergleicht (y/n)?"
 echo -e "Donwload \e[91mDebian repository Index\e[39m über \e[33mTor\e[39m, apt would say if someone changed them (y/n)?"
