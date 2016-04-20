@@ -48,6 +48,8 @@ apt-get upgrade
 apt-get install torsocks apt-transport-tor
 mv /etc/apt/sources.list /etc/apt/sources.list.bak$(date +%y%m%d%H%M%S)
 
+apt-get install lsb-release 
+
 echo "
 deb tor+http://vwakviie2ienjx6t.onion/debian/ $(lsb_release -c -s) main contrib
 deb tor+http://earthqfvaeuv5bla.onion/debian/ $(lsb_release -c -s) main contrib
