@@ -39,6 +39,8 @@ else
   echo -e "not downloading debian fingerprints"
 fi
 
+apt-get install lsb-release 
+
 echo -e "\e[91mDebian Repository Index\e[39m über \e[33mTor\e[39m runterladen, was dann apt automatisch vergleicht (y/n)?"
 echo -e "Donwload \e[91mDebian repository Index\e[39m über \e[33mTor\e[39m, apt would say if someone changed them (y/n)?"
 read answer
@@ -48,7 +50,6 @@ apt-get upgrade
 apt-get install torsocks apt-transport-tor
 mv /etc/apt/sources.list /etc/apt/sources.list.bak$(date +%y%m%d%H%M%S)
 
-apt-get install lsb-release 
 
 echo "
 deb tor+http://vwakviie2ienjx6t.onion/debian/ $(lsb_release -c -s) main contrib
