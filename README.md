@@ -15,6 +15,7 @@ To select your keyboard:
 **apt-cache search keyboard** 
 
 **apt-get install console-setup** (that lets you select your keyboard and language, takes about 1Min.) 
+**dpkg-reconfigure keyboard-configuration** (does also work if already installed)
 
 -than you can install a Graphical environment with:
 
