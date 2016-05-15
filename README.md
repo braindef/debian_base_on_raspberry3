@@ -3,7 +3,7 @@ debian_base_on_raspberry3
 ## does not work with Raspberry PI 1 (Keyboard Issue, kernelmod?)
 Boot Partition: FAT16 (+LBA)
 ## does not work with Orange PI (bootloader?)
-Boot Partition: FAT32
+Boot Partition: FAT32 (but seems to be possible to have just one big ext4 Partition and to boot from root)
 ## partitially working Debian Jessie 
 installs Debian Jessie for ARM you can do this eg with an AMD64 machine, uses debootstrap
 ### Login credentials: root / root
