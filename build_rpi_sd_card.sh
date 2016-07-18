@@ -53,7 +53,7 @@ udisksctl unmount -p  /dev/mmcblk0p2
 udisksctl unmount -p  /dev/mmcblk0p3
 udisksctl unmount -p  /dev/mmcblk0p4
 
-bootsize="64M"
+bootsize="256M"
 : ${deb_release:="jessie"}
 
 echo "Using Debian release: $deb_release"
