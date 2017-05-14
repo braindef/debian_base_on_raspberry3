@@ -153,8 +153,10 @@ then
 Usage:
 ------
 Enter the device where you want to write the image to eg:
-${red}sudo ${0} /dev/sdb${defaultColor} or
-${red}sudo ${0} /dev/mmcblk0${defaultColor} or something else "
+${red}sudo ${0} /dev/sdb${defaultColor} (for USB SD-Card Adapter) or
+${red}sudo ${0} /dev/mmcblk0${defaultColor} (for a builtin SD-Card Adapter) or
+${red}sudo ${0} image${defaultColor} (if you want just an image) or
+something else "
 	echo
 	echo " arguments ---------------->  ${@}     "
 	echo " \$1 ----------------------->  $1       "
@@ -170,59 +172,59 @@ fi
 echo -e "${red}${0} ${@}${defaultColor}"
 
 
-
 echo installing required packages on AMD64 Machine
 ShowAndExecute "apt-get install binfmt-support qemu qemu-user-static debootstrap kpartx lvm2 dosfstools"
 
+ShowAndExecute "umount ${1}*"
 
-if ! [ -b $device ]; then 
-	echo "$device is not a block device"
-	exit 1
-fi
+# Image, /dev/mmcblk* or /dev/sd* ?
+#==============================================================================
+if [ "$1" = "image" ]
+then
+	echo -e "${red}no block device given, just creating an image${defaultColor}"
 
-ShowAndExecute "umount ${1}*1"
-ShowAndExecute "umount ${1}*2"
-ShowAndExecute "umount ${1}*3"
-ShowAndExecute "umount ${1}*4"
-
-if [ "$device" == "" ]; then
-	echo "no block device given, just creating an image"
 	mkdir -p $buildenv
+
 	image="${buildenv}/raspbian_base_${deb_release}_${mydate}.img"
+
 	dd if=/dev/zero of=$image bs=1MB count=1000
+
 	device=`losetup -f --show $image`
-	echo "image $image created and mounted as $device"
-else
-	ShowAndExecute "dd if=/dev/zero of=$device bs=512 count=1"
+
+	echo -e "${red}image $image created and mounted as $device${defaultColor}"
+
+	echo -e "o\nn\np\n1\n\n+${bootsize}\ny\nt\nc\np\nn\np\n2\n\n\ny\np\nw" | fdisk $device
+
+	losetup -d $device
+
+	device=`kpartx -sva $image | sed -E 's/.*(loop[0-9])p.*/\1/g' | head -1`
+
+	device="/dev/mapper/${device}"
+	boot_partition="${device}p1"  
+	root_partition="${device}p2"
 fi
 
-
-echo -e "${red}fdisk $device creating new DOS Partition${defaultColor}"
-
-echo -e "o\nn\np\n1\n\n+${bootsize}\ny\nt\nc\np\nn\np\n2\n\n\ny\np\nw" | fdisk $device
-
-set -e
-
-if [ "$image" != "" ]; then 
-	losetup -d $device 
-	device=`kpartx -sva $image | sed -E 's/.*(loop[0-9])p.*/\1/g' | head -1` 
-	device="/dev/mapper/${device}" 
-	boot_partition=${device}p1 
+if [[ $1 == *"mmc"* ]]
+then
+	boot_partition=${device}p1  
 	root_partition=${device}p2 
-else 
-	if ! [ -b ${device}1 ]; then 
-	boot_partition=${device}p1 
-	root_partition=${device}p2 
-		if ! [ -b ${boot_partition} ]; then 
-			echo "uh, oh, something went wrong, can't find boot_partitionartition neither as ${device}p1 nor as ${device}p1, exiting." 
-			exit 1 
-		fi 
-	else 
-		boot_partition=${device}p1 
-		root_partition=${device}p2 
-	fi   
-fi 
-									     
+	device=$1
+	echo -e "${red}fdisk $device creating new DOS Partition${defaultColor}"
+	echo -e "o\nn\np\n1\n\n+${bootsize}\ny\nt\nc\np\nn\np\n2\n\n\ny\np\nw" | fdisk $device
+fi
+
+if [[ $1 == *"sd"* ]]
+then
+	boot_partition=${device}1  
+	root_partition=${device}2
+	device=$1
+	echo -e "${red}fdisk $device creating new DOS Partition${defaultColor}"
+	echo -e "o\nn\np\n1\n\n+${bootsize}\ny\nt\nc\np\nn\np\n2\n\n\ny\np\nw" | fdisk $device
+fi
+
+#==============================================================================
+
+
 ShowAndExecute "mkfs.vfat $boot_partition"
 ShowAndExecute "mkfs.ext4 $root_partition"
 
@@ -299,11 +301,12 @@ echo "
 echo 'SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", ATTR{address}==\"*\", ATTR{dev_id}==\"0x0\", ATTR{type}==\"1\", KERNEL==\"eth*\", NAME=\"eth0\"'>>/etc/udev/rules.d/70-persistent-net.rules" >> third-stage
 
 
-#echo "
-#echo
-#echo \"echo edit your networkinterfaces /etc/udev/rules.d/70-persistent-net.rules: 
-#/sbin/udevadm info -e | grep ID_NET_NAME 
-#\" >>/root/.profile " >> third-stage 
+echo "
+echo
+echo \"echo edit your networkinterfaces /etc/udev/rules.d/70-persistent-net.rules: 
+
+/sbin/udevadm info -e | grep ID_NET_NAME 
+\" >>/root/.profile " >> third-stage 
 
 ShowAndExecute "chmod +x third-stage" 
 LANG=C chroot $rootfs /third-stage
