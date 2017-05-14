@@ -81,6 +81,7 @@ buildenv="$(pwd)/image"
 rootfs="${buildenv}/rootfs" 
 bootfs="${rootfs}/boot" 
 mydate=`date +%Y%m%d`
+image=""
 #==============================================================================
 
 
@@ -150,176 +151,202 @@ if [[ $EUID -ne 0 ]]; then
 	      echo
 	        exit 1
 	fi
-	#==============================================================================
+#==============================================================================
 
 
-	# Test if user has given enough parameters
-	#==============================================================================
-	if "$1" = ""
-	then
-		echo -e "
-		Usage:
-		------
-		Enter the device where you want to write the image to ${red}sudo ${0} /dev/sdb${default} or ${red}sudo ${0} /dev/mmcblk0${default} or something else "
-		echo
-		echo " arguments ---------------->  ${@}     "
-		echo " \$1 ----------------------->  $1       "
-		echo " \$2 ----------------------->  $2       "
-		echo " path to script ----------->  ${0}     "
-		echo " parent path -------------->  ${0%/*}  "
-		echo " script name -------------->  ${0##*/} "
-		echo
-		exit 0
-	fi
-	#==============================================================================
+# Test if user has given enough parameters
+#==============================================================================
+if "$1" = ""
+then
+	echo -e "
+	Usage:
+	------
+	Enter the device where you want to write the image to ${red}sudo ${0} /dev/sdb${default} or ${red}sudo ${0} /dev/mmcblk0${default} or something else "
+	echo
+	echo " arguments ---------------->  ${@}     "
+	echo " \$1 ----------------------->  $1       "
+	echo " \$2 ----------------------->  $2       "
+	echo " path to script ----------->  ${0}     "
+	echo " parent path -------------->  ${0%/*}  "
+	echo " script name -------------->  ${0##*/} "
+	echo
+	exit 0
+fi
+#==============================================================================
 
-	echo -e "${red}${0} ${@}${default}"
-
-	# get the newest updates
-	#==============================================================================
+echo -e "${red}${0} ${@}${default}"
 
 
+if ! [ -b $device ]; then 
+	echo "$device is not a block device"
+	exit 1
+fi
 
-	ShowAndExecute "umount ${1}*1"
-	ShowAndExecute "umount ${1}*2"
-	ShowAndExecute "umount ${1}*3"
-	ShowAndExecute "umount ${1}*4"
+ShowAndExecute "umount ${1}*1"
+ShowAndExecute "umount ${1}*2"
+ShowAndExecute "umount ${1}*3"
+ShowAndExecute "umount ${1}*4"
 
-        echo installing required packages on AMD64 Machine
-	ShowAndExecute "apt-get install binfmt-support qemu qemu-user-static debootstrap kpartx lvm2 dosfstools"
-	
-	ShowAndExecute "cat -e /var/lib/dpkg/lock"
+if [ "$device" == "" ]; then
+	echo "no block device given, just creating an image"
+	mkdir -p $buildenv
+	image="${buildenv}/raspbian_base_${deb_release}_${mydate}.img"
+	dd if=/dev/zero of=$image bs=1MB count=1000
+	device=`losetup -f --show $image`
+	echo "image $image created and mounted as $device"
+	else
+	ShowAndExecute "dd if=/dev/zero of=$device bs=512 count=1"
+fi
 
-	ShowAndExecute "dpkg --configure -a"
 
-	ShowAndExecute "apt --fix-broken install"
+echo installing required packages on AMD64 Machine
+ShowAndExecute "apt-get install binfmt-support qemu qemu-user-static debootstrap kpartx lvm2 dosfstools"
 
-	ShowAndExecute "apt-get -y update"
+echo fdisk $device creating new DOS Partition
+fdisk $device << EOF
+o
 
-	ShowAndExecute "apt-get -y upgrade"
+w
 
-	ShowAndExecute "apt-get -y dist-upgrade"
+EOF 
+ 
+echo fdisk $device 
+fdisk $device << EOF 
+n 
+p 
+1 
+ 
++$bootsize 
+t 
+c 
+n 
+p 
+2 
+ 
+ 
+w 
+EOF
 
-	ShowAndExecute "apt-get -y install sudo git vim nano"
-	#==============================================================================
+set -e
 
-	# edit repository list
-	#==============================================================================
-	if YESNO "Edit /etc/apt/sources.list?"
-	then
-		ShowAndExecute "$EDITOR /etc/apt/sources.list"
-	fi
+if [ "$image" != "" ]; then 
+	losetup -d $device 
+	device=`kpartx -sva $image | sed -E 's/.*(loop[0-9])p.*/\1/g' | head -1` 
+	device="/dev/mapper/${device}" 
+	boot_partition=${device}p1 
+	root_partition=${device}p2 
+else 
+	if ! [ -b ${device}1 ]; then 
+	boot_partition=${device}p1 
+	root_partition=${device}p2 
+		if ! [ -b ${boot_partition} ]; then 
+			echo "uh, oh, something went wrong, can't find boot_partitionartition neither as ${device}p1 nor as ${device}p1, exiting." 
+			exit 1 
+		fi 
+	else 
+		boot_partition=${device}p1 
+		root_partition=${device}p2 
+	fi   
+fi 
+									     
+ShowAndExecute "mkfs.vfat $boot_partition"
+ShowAndExecute "mkfs.ext4 $root_partition"
 
-	if YESNO "Use TOR (The Onion Router) for APT Transport?"
-	then
+ShowAndExecute "mkdir -p $rootfs"
 
-		  ShowAndExecute "apt-get -y install torsocks apt-transport-tor"
+ShowAndExecute "mount $root_partition $rootfs"
 
-		    cp /etc/apt/sources.list /etc/apt/sources.list-$(date +%Y%m%d-%H%M%S.bak)
-		      echo "
-		      deb tor+http://vwakviie2ienjx6t.onion/debian/ $codename main contrib
-		      deb tor+http://earthqfvaeuv5bla.onion/debian/ $codename main contrib
-		      " > /etc/apt/sources.list
+ShowAndExecute "cd $rootfs"
 
-		      ShowAndExecute "apt-get -y update"
+ShowAndExecute "debootstrap  --foreign --arch armhf $deb_release $rootfs $deb_local_mirror"
+#debootstrap  --foreign --arch arm64 $deb_release $rootfs $deb_local_mirror
 
-		      ShowAndExecute "apt-get -y upgrade"
+ShowAndExecute "cp /usr/bin/qemu-arm-static usr/bin/"
+ShowAndExecute "LANG=C chroot $rootfs debootstrap/debootstrap --second-stage"
 
-		      ShowAndExecute "apt-get -y install tor tor-arm"
-	      fi
+ShowAndExecute "mount $boot_partition $bootfs"
 
-	      if YESNO "Use normal httpredir.debian.org for APT Transport?"
-	      then
-		        cp /etc/apt/sources.list /etc/apt/sources.list-$(date +%Y%m%d-%H%M%S.bak)
-			  echo "
-			  deb http://httpredir.debian.org/debian/ $distro main contrib
-			  deb-src http://httpredir.debian.org/debian/ $distro main contrib
-			  deb http://security.debian.org/ $distro/updates main contrib
-			  deb-src http://security.debian.org/ $distro/updates main contrib
-			  deb http://httpredir.debian.org/debian/ $distro-updates main contrib
-			  deb-src http://httpredir.debian.org/debian/ $distro-updates main contrib
-			  " >/etc/apt/sources.list
+echo "
+deb $deb_mirror $deb_release main contrib
+deb-src $deb_mirror $deb_release main contrib
 
-		  fi
+deb http://security.debian.org/ $deb_release/updates main contrib
+deb-src http://security.debian.org/ $deb_release/updates main contrib
 
-		  # edit repository list after modification
-		  #==============================================================================
-		  if YESNO "Edit /etc/apt/sources.list?"
-		  then
-			  ShowAndExecute "$EDITOR /etc/apt/sources.list"
+deb $deb_mirror $deb_release-updates main contrib
+deb-src $deb_mirror $deb_release-updates main contrib
 
-			  ShowAndExecute "apt-get -y update"
+" > etc/apt/sources.list
 
-			  ShowAndExecute "apt-get -y upgrade"
-		  fi
+echo "${red}dwc_otg.lpm_enable=0 console=ttyAMA0,115200 kgdboc=ttyAMA0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 rootwait${default}"
+echo "dwc_otg.lpm_enable=0 console=ttyAMA0,115200 kgdboc=ttyAMA0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 rootwait" > boot/cmdline.txt
 
-		  # edit repository list after modification
-		  #==============================================================================
-		  ShowAndExecute "apt-get -y install md5deep"
-		  ShowAndExecute "apt-get -y install rdfind"
-		  ShowAndExecute "apt-get -y install nmap"
-		  ShowAndExecute "apt-get -y install rsync"
-		  ShowAndExecute "apt-get -y install snmp"
-		  ShowAndExecute "apt-get -y install jigdo-file"
-		  ShowAndExecute "apt-get -y install build-essential"
-		  ShowAndExecute "apt-get -y install pkg-config "
-		  ShowAndExecute "apt-get -y install libdbus-1-dev"
-		  ShowAndExecute "apt-get -y install apt-file"
-		  ShowAndExecute "apt-file update"
-		  ShowAndExecute "apt-get -y install figlet"
-		  ShowAndExecute "apt-get -y install git"
-		  ShowAndExecute "apt-get -y install tcpdump"
-		  ShowAndExecute "apt-get -y install iptraf"
-		  ShowAndExecute "apt-get -y install gparted"
-		  ShowAndExecute "apt-get -y install lightdm lxde"
-		  ShowAndExecute "apt-get -y install gdm3 gnome gnome-shell"
-		  ShowAndExecute "apt-get -y install gconf-editor"
-		  ShowAndExecute "gsettings set org.gnome.nautilus.preferences always-use-location-entry true"
-		  ShowAndExecute "apt-get -y install chromium"
-		  ShowAndExecute "apt-get -y install inkscape"
-		  ShowAndExecute "apt-get -y install gimp"
-		  ShowAndExecute "apt-get -y install libreoffice"
-		  ShowAndExecute "apt-get -y install libreoffice-help-de"
-		  ShowAndExecute "apt-get -y install libreoffice-l10n-de"
-		  ShowAndExecute "apt-get -y install cups-pdf"
-		  ShowAndExecute "apt-get -y install keepassx "
-		  ShowAndExecute "apt-get -y install icedove"
-		  ShowAndExecute "apt-get -y install vlc"
-		  ShowAndExecute "apt-get -y install kdenlive"
-		  ShowAndExecute "apt-get -y install screenkey"
-		  ShowAndExecute "apt-get -y install simplescreenrecorder"
-		  ShowAndExecute "apt-get -y install virtualbox"
+echo "proc            /proc           proc    defaults        0       0
+/dev/mmcblk0p1  /boot           vfat    defaults        0       0
+/dev/mmcblk0p2  /           ext4    defaults        0       0
+" > etc/fstab
 
-		  #ShowAndExecute "apt-get -y install audacity"
-		  #ShowAndExecute "apt-get -y install lmms" +ladspa delay zynfx?
+echo "debian" > etc/hostname
 
-		  ShowAndExecute "apt-get -y install posterazor"
-		  ShowAndExecute "apt-get -y install gconf-editor"
-		  ShowAndExecute "apt-get -y install mumble"
-		  ShowAndExecute "apt-get -y install font-manager"
-		  ShowAndExecute "apt-get -y install quassel "
-		  ShowAndExecute "apt-get -y install pidginnnnnnn"
+echo "auto lo 
+iface lo inet loopback 
+ 
+auto eth0 
+iface eth0 inet dhcp 
+" > etc/network/interfaces 
+ 
+echo "vchiq 
+snd_bcm2835 
+" >> etc/modules 
+ 
+echo "#!/bin/bash 
+apt-get update  
+apt-get -y install --no-install-recommends git-core binutils ca-certificates curl net-tools usbutils 
 
-		  #ShowAndExecute "apt-get -y install xserver-xorg-input-all"
-		  #ShowAndExecute "apt-get -y install gnome-commander"
-		  #ShowAndExecute "#apt-get -y install mc"
-		  #ShowAndExecute "#apt-get -y install xsane"
-		  #ShowAndExecute "apt-get -y install redshift"
-		  #ShowAndExecute "apt-get -y install extundelete"
-		  #ShowAndExecute "apt-get -y install qrencode "
-		  #ShowAndExecute "apt-get -y install apt-xapian-index"
+wget https://raw.githubusercontent.com/Hexxeh/rpi-update/master/rpi-update -O /usr/bin/rpi-update 
+chmod +x /usr/bin/rpi-update 
 
-		  #printf "install pamusb (y/n)"
-		  #gparted
-		  #/usr/bin/pamusb-conf --add-device seven
-		  #/usr/bin/pamusb-conf --add-user $(id -u 1000 -n)
+mkdir /lib/modules 
+touch /boot/start.elf 
+SKIP_BACKUP=1 rpi-update 
 
-		  #printf "install tripwire?"
-		  #echo -e "Benutzer \e[92mguest\e[39m erstellen mit zweitem mini MemoryStick, den man auch stecken lassen kann und keine Admin-rechte hat (y/n)?"
+apt-get -y install ntp openssh-server less vim 
 
-		  #echo -e "generell Bunt einschalten im vim"
-		  #echo "syntax on" >>$HOME/.vimrc
-		  #printf "install torbrowser-launcher non-free"
+echo \"root:root\" | chpasswd 
 
-		  ShowAndExecute "apt-get autoremove"
+echo 'SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", ATTR{address}==\"*\", ATTR{dev_id}==\"0x0\", ATTR{type}==\"1\", KERNEL==\"eth*\", NAME=\"eth0\"'>>/etc/udev/rules.d/70-persistent-net.rules  
+
+#' remove
+
+echo \"echo edit your networkinterfaces /etc/udev/rules.d/70-persistent-net.rules: 
+/sbin/udevadm info -e | grep ID_NET_NAME 
+\" >>/root/.profile 
+" > third-stage 
+
+chmod +x third-stage 
+LANG=C chroot $rootfs /third-stage
+
+
+echo "#!/bin/bash
+apt-get clean
+rm -f cleanup
+" > cleanup
+chmod +x cleanup
+LANG=C chroot $rootfs /cleanup
+
+cd
+
+sync
+
+umount $boot_partition
+umount $root_partition
+
+if [ "$image" != "" ]; then
+	kpartx -d $image
+	echo "created image $image"
+fi
+
+
+ShowAndExecute "echo have fun..."
+
 
