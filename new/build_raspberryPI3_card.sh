@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo not working yet
-exit 0
+#exit 0
 
 # Script Debian Base on Raspberry PI3 from AMD64 machine
 #==============================================================================
@@ -152,7 +152,9 @@ then
 	echo -e "
 Usage:
 ------
-Enter the device where you want to write the image to ${red}sudo ${0} /dev/sdb${defaultColor} or ${red}sudo ${0} /dev/mmcblk0${defaultColor} or something else "
+Enter the device where you want to write the image to eg:
+${red}sudo ${0} /dev/sdb${defaultColor} or
+${red}sudo ${0} /dev/mmcblk0${defaultColor} or something else "
 	echo
 	echo " arguments ---------------->  ${@}     "
 	echo " \$1 ----------------------->  $1       "
@@ -303,7 +305,7 @@ echo 'SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", ATTR{address}==\"*\"
 #/sbin/udevadm info -e | grep ID_NET_NAME 
 #\" >>/root/.profile " >> third-stage 
 
-chmod +x third-stage 
+ShowAndExecute "chmod +x third-stage" 
 LANG=C chroot $rootfs /third-stage
 
 
