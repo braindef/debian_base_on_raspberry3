@@ -2,46 +2,38 @@ debian_base_on_raspberry3
 =========================
 ## does not work with Raspberry PI 1 (Keyboard Issue, kernelmod?)
 ## does not work with Orange PI (bootloader?)
-## working with debian jessie and stretch
+## you can build AMDHF stretch base system only from a AMD64 stretch system not from a jessie but the other way works
+
+## run with
+sudo ./build_raspberryPI3_card.sh /dev/sdb
+sudo ./build_raspberryPI3_card.sh /dev/mmcblk0
+sudo ./build_raspberryPI3_card.sh image (creates a image that you can copy an an SD-Card)
 
 ### Login credentials: root / root
 
-**start with**: sudo ./build_rpi_sd_card.sh /dev/mmcblk0 (on an Intel or AMD Computer with plugged in microSDCard for Raspi3)
-
--then you can boot it in your Raspi3
-
 To select your keyboard:
-
 **apt-cache search keyboard** 
 
-**apt-get install console-setup** (that lets you select your keyboard and language, takes about 1Min.) 
-**dpkg-reconfigure keyboard-configuration** (does also work if already installed)
+**dpkg-reconfigure keyboard-configuration** or **apt-get install console-setup**
 
--than you can install a Graphical environment with:
+-than you can install a graphical environment with:
 
 **apt-get install lxde** 
 it takes forever (2h) so plan eg to bake a cake during this part of the installation, since it's not funny watching 2h packages installing... 
 
-or use the installation script install.sh, needs to be made executable with chmod u+x install.sh then run with
+TODO: Test with ARM64 (since this shall give more performance)
 
-**./install.sh** (use lightdm, gdm3 seems to be to slow)
+WiFi
 
-      TODO: Test with ARM64 (since this shall give more performance)
+other Drivers like sound
 
-      WiFi
-
-      other Drivers like sound
-
-      seems to work with debian stretch too :%s/jessie/stretch/g (vim) but without network eth0 nor wifi
-
-      (maybe --2016-03-20 22:38:26--  https://raw.githubusercontent.com/Hexxeh/rpi-update/master/rpi-update
-      not yet compatible stretch kernel) but it boots...
+seems to work with debian stretch too :%s/jessie/stretch/g (vim) but without network eth0 nor wifi
 
 Based on raspbain script from jmattson, TNX jmattson and Klaus M Pfeiffer.:
 
 credits to Hexxeh and jmattsson for the initial script
 
-
+Original README.md
 rasbian_base
 ============
 Since I frequently find myself wanting a minimal base installation of Raspbian
