@@ -62,15 +62,14 @@ EDITOR=$(which vim)
 # Color Definitions
 #==============================================================================
 red="\e[91m"
-default="\e[39m"
+defaultColor="\e[39m"
 #==============================================================================
 
 
 # Define which Linux Distribution
 #==============================================================================
-#distro=jessie
-distro=stretch
-${deb_release:="stretch"} 
+#deb_release="jessie"
+deb_release="stretch"
 #==============================================================================
 
 bootsize="64M"
@@ -90,33 +89,25 @@ image=""
 #deb_mirror="http://mirror.internode.on.net/pub/raspbian/raspbian/" 
 deb_mirror="http://httpredir.debian.org/debian" 
 #deb_local_mirror="http://debian.kmp.or.at:3142/debian"
-#deb_mirror="http://armbian.org/
+#deb_mirror="http://armbian.org/"
 #==============================================================================
 
 
+# Define which component for the repository
+#==============================================================================
+component="main contrib"                                    #debian
+#component="main restricted universe multiverse"            #ubuntu
 
 # Helper Function to show first the command that is beeing executed
 #==============================================================================
 function ShowAndExecute {
 	#show command
-	echo -e "${red} $1 ${default}"
+	echo -e "${red}$1 ${defaultColor}"
 	#execute command
 	$1
 	#test if it worked or give an ERROR Message in red, return code of apt is stored in $?
-	rc=$?; if [[ $rc != 0 ]]; then echo -e ${red}ERROR${default} $rc; fi
-
-
-# Helper Function to show first the command that is beeing executed
-#==============================================================================
-function ShowAndExecute {
-	#show command
-	echo -e "${red} $1 ${default}"
-	#execute command
-	$1
-	#test if it worked or give an ERROR Message in red, return code of apt is stored in $?
-	rc=$?; if [[ $rc != 0 ]]; then echo -e ${red}ERROR${default} $rc; fi
+	rc=$?; if [[ $rc != 0 ]]; then echo -e ${red}ERROR${defaultColor} $rc; fi
 }
-##test if everything worked
 #==============================================================================
 
 
@@ -126,7 +117,7 @@ function ShowAndExecute {
 #==============================================================================
 function YESNO {
 	echo -e -n "
-	${red}$1 [y/N]${default} "
+	${red}$1 [y/N]${defaultColor} "
 	read -d'' -s -n1 answer
 	echo
 	if  [ "$answer" = "y" ] || [ "$answer" = "Y" ]
@@ -144,24 +135,24 @@ function YESNO {
 # Test if script runs as root otherweise exit with exit code 1
 #==============================================================================
 if [[ $EUID -ne 0 ]]; then
-	  echo -e -n "
-	  ${red}You must be a root user to run this script${default}
-	  at the moment you are " 2>&1
-	    id | cut -d " " -f1
-	      echo
-	        exit 1
-	fi
+	echo -e -n "
+	${red}You must be a root user to run this script${defaultColor}
+	at the moment you are " 2>&1
+	id | cut -d " " -f1
+	echo
+	exit 1
+fi
 #==============================================================================
 
 
 # Test if user has given enough parameters
 #==============================================================================
-if "$1" = ""
+if [ "$1" = "" ]
 then
 	echo -e "
-	Usage:
-	------
-	Enter the device where you want to write the image to ${red}sudo ${0} /dev/sdb${default} or ${red}sudo ${0} /dev/mmcblk0${default} or something else "
+Usage:
+------
+Enter the device where you want to write the image to ${red}sudo ${0} /dev/sdb${defaultColor} or ${red}sudo ${0} /dev/mmcblk0${defaultColor} or something else "
 	echo
 	echo " arguments ---------------->  ${@}     "
 	echo " \$1 ----------------------->  $1       "
@@ -174,7 +165,12 @@ then
 fi
 #==============================================================================
 
-echo -e "${red}${0} ${@}${default}"
+echo -e "${red}${0} ${@}${defaultColor}"
+
+
+
+echo installing required packages on AMD64 Machine
+ShowAndExecute "apt-get install binfmt-support qemu qemu-user-static debootstrap kpartx lvm2 dosfstools"
 
 
 if ! [ -b $device ]; then 
@@ -194,38 +190,14 @@ if [ "$device" == "" ]; then
 	dd if=/dev/zero of=$image bs=1MB count=1000
 	device=`losetup -f --show $image`
 	echo "image $image created and mounted as $device"
-	else
+else
 	ShowAndExecute "dd if=/dev/zero of=$device bs=512 count=1"
 fi
 
 
-echo installing required packages on AMD64 Machine
-ShowAndExecute "apt-get install binfmt-support qemu qemu-user-static debootstrap kpartx lvm2 dosfstools"
+echo -e "${red}fdisk $device creating new DOS Partition${defaultColor}"
 
-echo fdisk $device creating new DOS Partition
-fdisk $device << EOF
-o
-
-w
-
-EOF 
- 
-echo fdisk $device 
-fdisk $device << EOF 
-n 
-p 
-1 
- 
-+$bootsize 
-t 
-c 
-n 
-p 
-2 
- 
- 
-w 
-EOF
+echo -e "o\nn\np\n1\n\n+${bootsize}\ny\nt\nc\np\nn\np\n2\n\n\ny\np\nw" | fdisk $device
 
 set -e
 
@@ -262,23 +234,23 @@ ShowAndExecute "debootstrap  --foreign --arch armhf $deb_release $rootfs $deb_lo
 #debootstrap  --foreign --arch arm64 $deb_release $rootfs $deb_local_mirror
 
 ShowAndExecute "cp /usr/bin/qemu-arm-static usr/bin/"
-ShowAndExecute "LANG=C chroot $rootfs debootstrap/debootstrap --second-stage"
+LANG=C chroot $rootfs debootstrap/debootstrap --second-stage
 
 ShowAndExecute "mount $boot_partition $bootfs"
 
 echo "
-deb $deb_mirror $deb_release main contrib
-deb-src $deb_mirror $deb_release main contrib
+deb $deb_mirror $deb_release $component
+deb-src $deb_mirror $deb_release $component
 
-deb http://security.debian.org/ $deb_release/updates main contrib
-deb-src http://security.debian.org/ $deb_release/updates main contrib
+deb http://security.debian.org/ $deb_release/updates $component
+deb-src http://security.debian.org/ $deb_release/updates $component
 
-deb $deb_mirror $deb_release-updates main contrib
-deb-src $deb_mirror $deb_release-updates main contrib
+deb $deb_mirror $deb_release-updates $component
+deb-src $deb_mirror $deb_release-updates $component
 
 " > etc/apt/sources.list
 
-echo "${red}dwc_otg.lpm_enable=0 console=ttyAMA0,115200 kgdboc=ttyAMA0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 rootwait${default}"
+echo "${red}dwc_otg.lpm_enable=0 console=ttyAMA0,115200 kgdboc=ttyAMA0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 rootwait${defaultColor}"
 echo "dwc_otg.lpm_enable=0 console=ttyAMA0,115200 kgdboc=ttyAMA0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 rootwait" > boot/cmdline.txt
 
 echo "proc            /proc           proc    defaults        0       0
@@ -302,26 +274,34 @@ snd_bcm2835
 echo "#!/bin/bash 
 apt-get update  
 apt-get -y install --no-install-recommends git-core binutils ca-certificates curl net-tools usbutils 
+" > third-stage
 
+echo "
 wget https://raw.githubusercontent.com/Hexxeh/rpi-update/master/rpi-update -O /usr/bin/rpi-update 
 chmod +x /usr/bin/rpi-update 
+" >> third-stage
 
+echo "
 mkdir /lib/modules 
 touch /boot/start.elf 
 SKIP_BACKUP=1 rpi-update 
+" >> third-stage
 
+echo "
 apt-get -y install ntp openssh-server less vim 
 
 echo \"root:root\" | chpasswd 
+" >>third-stage
 
-echo 'SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", ATTR{address}==\"*\", ATTR{dev_id}==\"0x0\", ATTR{type}==\"1\", KERNEL==\"eth*\", NAME=\"eth0\"'>>/etc/udev/rules.d/70-persistent-net.rules  
+echo "
+echo 'SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", ATTR{address}==\"*\", ATTR{dev_id}==\"0x0\", ATTR{type}==\"1\", KERNEL==\"eth*\", NAME=\"eth0\"'>>/etc/udev/rules.d/70-persistent-net.rules" >> third-stage
 
-#' remove
 
-echo \"echo edit your networkinterfaces /etc/udev/rules.d/70-persistent-net.rules: 
-/sbin/udevadm info -e | grep ID_NET_NAME 
-\" >>/root/.profile 
-" > third-stage 
+#echo "
+#echo
+#echo \"echo edit your networkinterfaces /etc/udev/rules.d/70-persistent-net.rules: 
+#/sbin/udevadm info -e | grep ID_NET_NAME 
+#\" >>/root/.profile " >> third-stage 
 
 chmod +x third-stage 
 LANG=C chroot $rootfs /third-stage
@@ -347,6 +327,6 @@ if [ "$image" != "" ]; then
 fi
 
 
-ShowAndExecute "echo have fun..."
+echo have fun...
 
 
