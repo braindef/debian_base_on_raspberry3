@@ -1,11 +1,9 @@
 debian_base_on_raspberry3
 =========================
 ## does not work with Raspberry PI 1 (Keyboard Issue, kernelmod?)
-Boot Partition: FAT16 (+LBA)
 ## does not work with Orange PI (bootloader?)
-Boot Partition: FAT32 (but seems to be possible to have just one big ext4 Partition and to boot from root)
-## partitially working Debian Jessie 
-installs Debian Jessie for ARM you can do this eg with an AMD64 machine, uses debootstrap
+## working with debian jessie and stretch
+
 ### Login credentials: root / root
 
 **start with**: sudo ./build_rpi_sd_card.sh /dev/mmcblk0 (on an Intel or AMD Computer with plugged in microSDCard for Raspi3)
@@ -40,6 +38,9 @@ or use the installation script install.sh, needs to be made executable with chmo
       not yet compatible stretch kernel) but it boots...
 
 Based on raspbain script from jmattson, TNX jmattson and Klaus M Pfeiffer.:
+
+credits to Hexxeh and jmattsson for the initial script
+
 
 rasbian_base
 ============
