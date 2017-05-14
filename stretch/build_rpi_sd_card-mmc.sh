@@ -201,10 +201,8 @@ touch /boot/start.elf
 SKIP_BACKUP=1 rpi-update
 apt-get -y install ntp openssh-server less vim
 echo \"root:root\" | chpasswd
-sed -i -e 's/KERNEL\!=\"eth\*|/KERNEL\!=\"/' /lib/udev/rules.d/75-persistent-net-generator.rules
-rm -f /etc/udev/rules.d/70-persistent-net.rules
-#rm -f third-stage => google adresse löschen?
-echo \"echo your networkinterfaces:
+echo 'SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", ATTR{address}==\"*\", ATTR{dev_id}==\"0x0\", ATTR{type}==\"1\", KERNEL==\"eth*\", NAME=\"eth0\"'>>/etc/udev/rules.d/70-persistent-net.rules 
+echo \"echo edit your networkinterfaces /etc/udev/rules.d/70-persistent-net.rules:
 /sbin/udevadm info -e | grep ID_NET_NAME
 \" >>/root/.profile
 " > third-stage
