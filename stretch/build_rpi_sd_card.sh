@@ -38,6 +38,10 @@
 
 # you need at least
 
+umount ${1}\1
+umount ${1}\2
+
+
 read -p "Installing Debian Packages, please press [ANYKEY]"
 echo
 
@@ -48,12 +52,12 @@ deb_mirror="http://httpredir.debian.org/debian"
 #deb_local_mirror="http://debian.kmp.or.at:3142/debian"
 
 bootsize="64M"
-: ${deb_release:="jessie"}
+: ${deb_release:="stretch"}
 
 echo "Using Debian release: $deb_release"
 
 device=$1
-buildenv="/root/rpi"
+buildenv="$(pwd)/image"
 rootfs="${buildenv}/rootfs"
 bootfs="${rootfs}/boot"
 
@@ -87,8 +91,6 @@ else
   dd if=/dev/zero of=$device bs=512 count=1
 fi
 
-umount /dev/mmc*
-
 echo fdisk $device creating new DOS Partition
 fdisk $device << EOF
 o
@@ -120,8 +122,8 @@ if [ "$image" != "" ]; then
   losetup -d $device
   device=`kpartx -sva $image | sed -E 's/.*(loop[0-9])p.*/\1/g' | head -1`
   device="/dev/mapper/${device}"
-  boot_partition=${device}1
-  root_partition=${device}2
+  boot_partition=${device}p1
+  root_partition=${device}p2
 else
   if ! [ -b ${device}1 ]; then
     boot_partition=${device}1
@@ -156,14 +158,14 @@ LANG=C chroot $rootfs debootstrap/debootstrap --second-stage
 mount $boot_partition $bootfs
 
 echo "
-deb http://httpredir.debian.org/debian/ jessie main contrib
-deb-src http://httpredir.debian.org/debian/ jessie main contrib
+deb http://httpredir.debian.org/debian/ $deb_release main contrib
+deb-src http://httpredir.debian.org/debian/ $deb_release main contrib
 
-deb http://security.debian.org/ jessie/updates main contrib
-deb-src http://security.debian.org/ jessie/updates main contrib
+deb http://security.debian.org/ $deb_release/updates main contrib
+deb-src http://security.debian.org/ $deb_release/updates main contrib
 
-deb http://httpredir.debian.org/debian/ jessie-updates main contrib
-deb-src http://httpredir.debian.org/debian/ jessie-updates main contrib
+deb http://httpredir.debian.org/debian/ $deb_release-updates main contrib
+deb-src http://httpredir.debian.org/debian/ $deb_release-updates main contrib
 
 
 " > etc/apt/sources.list
@@ -190,7 +192,7 @@ snd_bcm2835
 
 echo "#!/bin/bash
 apt-get update 
-apt-get -y install --no-install-recommends git-core binutils ca-certificates curl
+apt-get -y install --no-install-recommends git-core binutils ca-certificates curl net-tools usbutils
 #das dann später raus nehmen
 wget https://raw.githubusercontent.com/Hexxeh/rpi-update/master/rpi-update -O /usr/bin/rpi-update
 #wget http://goo.gl/1BOfJ -O /usr/bin/rpi-update
@@ -203,6 +205,9 @@ echo \"root:root\" | chpasswd
 sed -i -e 's/KERNEL\!=\"eth\*|/KERNEL\!=\"/' /lib/udev/rules.d/75-persistent-net-generator.rules
 rm -f /etc/udev/rules.d/70-persistent-net.rules
 #rm -f third-stage => google adresse löschen?
+echo \"echo your networkinterfaces:
+/sbin/udevadm info -e | grep ID_NET_NAME
+\" >>/root/.profile
 " > third-stage
 chmod +x third-stage
 LANG=C chroot $rootfs /third-stage

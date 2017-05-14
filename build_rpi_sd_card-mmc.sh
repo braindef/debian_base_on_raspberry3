@@ -87,7 +87,6 @@ else
   dd if=/dev/zero of=$device bs=512 count=1
 fi
 
-umount /dev/mmc*
 
 echo fdisk $device creating new DOS Partition
 fdisk $device << EOF
@@ -124,15 +123,15 @@ if [ "$image" != "" ]; then
   root_partition=${device}2
 else
   if ! [ -b ${device}1 ]; then
-    boot_partition=${device}1
-    root_partition=${device}2
+    boot_partition=${device}p1
+    root_partition=${device}p2
     if ! [ -b ${boot_partition} ]; then
-      echo "uh, oh, something went wrong, can't find boot_partitionartition neither as ${device}1 nor as ${device}1, exiting."
+      echo "uh, oh, something went wrong, can't find boot_partitionartition neither as ${device}p1 nor as ${device}p1, exiting."
       exit 1
     fi
   else
-    boot_partition=${device}1
-    root_partition=${device}2
+    boot_partition=${device}p1
+    root_partition=${device}p2
   fi  
 fi
 
