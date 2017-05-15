@@ -1,8 +1,6 @@
 debian_base_on_raspberry3
 =========================
-## does not work with Raspberry PI 1 (Keyboard Issue, kernelmod?)
-## does not work with Orange PI (bootloader?)
-## you can build AMDHF stretch base system only from a AMD64 stretch system not from a jessie but the other way works
+## you can build ARMHF stretch base system only from a AMD64 stretch system not from a jessie but the other way works
 
 ## run with
 sudo ./build_raspberryPI3_card.sh /dev/sdb
