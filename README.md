@@ -3,9 +3,10 @@ debian_base_on_raspberry3
 ## you can build ARMHF stretch base system only from a AMD64 stretch system not from a jessie but the other way works
 
 ## run with
-sudo ./build_raspberryPI3_card.sh /dev/sdb
-sudo ./build_raspberryPI3_card.sh /dev/mmcblk0
-sudo ./build_raspberryPI3_card.sh image (creates a image that you can copy an an SD-Card)
+
+* **sudo ./build_raspberryPI3_card.sh /dev/sdb**
+* **sudo ./build_raspberryPI3_card.sh /dev/mmcblk0**
+* **sudo ./build_raspberryPI3_card.sh image** (creates a image that you can copy an an SD-Card)
 
 ### Login credentials: root / root
 
