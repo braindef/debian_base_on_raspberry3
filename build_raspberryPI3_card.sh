@@ -234,7 +234,7 @@ ShowAndExecute "mount $root_partition $rootfs"
 
 ShowAndExecute "cd $rootfs"
 
-ShowAndExecute "debootstrap  --foreign --arch armhf $deb_release $rootfs $deb_local_mirror"
+ShowAndExecute "debootstrap  --foreign --arch armhf $deb_release $rootfs $deb_mirror"
 #debootstrap  --foreign --arch arm64 $deb_release $rootfs $deb_local_mirror
 
 ShowAndExecute "cp /usr/bin/qemu-arm-static usr/bin/"
