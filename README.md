@@ -30,7 +30,7 @@ seems to work with debian stretch too :%s/jessie/stretch/g (vim) but without net
 
 Based on raspbain script from jmattson, TNX jmattson and Klaus M Pfeiffer.:
 
-credits to Hexxeh and jmattsson for the initial script
+credits to Klaus Maria Pfeiffer, Hexxeh and jmattsson
 
 Original README.md
 rasbian_base
