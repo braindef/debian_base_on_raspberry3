@@ -26,7 +26,7 @@ WiFi
 
 other Drivers like sound
 
-seems to work with debian stretch too :%s/jessie/stretch/g (vim) but without network eth0 nor wifi
+seems to work with debian stretch too :%s/jessie/stretch/g (vim) but without wifi, i made a alias for eth0
 
 Based on raspbain script from jmattson, TNX jmattson and Klaus M Pfeiffer.:
 
